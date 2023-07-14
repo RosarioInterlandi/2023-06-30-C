@@ -156,4 +156,90 @@ public class BaseballDAO {
 		return null;
 	}
 
+
+	public List<String> getAllTeamName(){
+		String sql = "SELECT DISTINCT t.name "
+				+ "FROM teams t "
+				+ "ORDER BY t.name ASC ";	
+		List<String> result = new ArrayList<String>();
+
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(rs.getString("name"));
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+	public List<Integer> getVertici(String nomeTeam){
+		String sql= "SELECT t.year "
+				+ "FROM teams t "
+				+ "WHERE t.name = ? "
+				+ "ORDER BY t.year ASC ";
+		List<Integer> result = new ArrayList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, nomeTeam);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(rs.getInt("year"));
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+		
+	}
+	public double pesoMedioTeam(Integer anno, String name) {
+		String sql = "SELECT SUM(p.weight) AS PesoTeam, COUNT(p.playerID) AS NumeroPlayers "
+				+ "FROM teams t, people p,appearances a "
+				+ "WHERE	t.name = ? "
+				+ "AND t.year = ? "
+				+ "AND t.ID = a.teamID "
+				+ "AND a.playerID = p.playerID ";
+		double result = 0;
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(2, anno);
+			st.setString(1, name);
+			ResultSet rs = st.executeQuery();
+			while (rs.next()) {
+				double peso = rs.getDouble("PesoTeam");
+				int numP = rs.getInt("NumeroPlayers");
+				result= (peso/numP);
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+
+		
+	}
+
+	
+
 }
